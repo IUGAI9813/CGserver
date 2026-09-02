@@ -1,0 +1,27 @@
+server:
+  port: 8090
+
+spring:
+  application:
+    name: coreguard-soc-backend
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/coreguard_db
+    username: postgres
+    password: user01
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    # Проверяет соответствие Entity-классов существующим таблицам, НЕ меняя схему
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
