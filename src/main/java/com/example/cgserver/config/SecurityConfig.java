@@ -1,4 +1,4 @@
-package com.example.cgserver.socbackend.config;
+package com.example.cgserver.config;
 
 
 import org.springframework.context.annotation.Bean;
