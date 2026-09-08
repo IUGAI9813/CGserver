@@ -6,7 +6,7 @@ spring:
     name: coreguard-soc-backend
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/coreguard_db
+    url: jdbc:postgresql://112.168.140.248:5432/coreguard_db
     username: postgres
     password: user01
     driver-class-name: org.postgresql.Driver

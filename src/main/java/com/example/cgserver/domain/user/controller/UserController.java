@@ -18,13 +18,14 @@ public class UserController {
 
     private final UserService service;
 
+    // 사용자 리스트
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers(){
 
         return  ResponseEntity.ok(service.getAllUsers());
     }
 
-
+    // 사용자 정보
     @GetMapping("/{email}")
     public ResponseEntity<UserResponse> getUserByEmail(@PathVariable  String email){
         return ResponseEntity.ok(service.getUser(email));
