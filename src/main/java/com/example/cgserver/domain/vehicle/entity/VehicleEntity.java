@@ -19,6 +19,9 @@ public class VehicleEntity {
     @Column(name = "VEHICLE_ID", length = 50)
     private String vehicleId;
 
+    @Column(name = "VEHICLE_TYPE", nullable = false, updatable = false)
+    private String vehicleType;
+
     @Column(name = "VIN", nullable = false, unique = true, length = 17)
     private String vin;
 

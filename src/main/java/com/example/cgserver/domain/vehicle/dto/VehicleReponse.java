@@ -15,6 +15,7 @@ public class VehicleReponse {
 
     private String vehicleId;
     private String vin;
+    private String vehicleType;
     private String model;
     private String status;
     private Double speedLimit;
@@ -28,6 +29,7 @@ public class VehicleReponse {
     public static VehicleReponse fromEntity(VehicleEntity entity){
         return VehicleReponse.builder()
                 .vehicleId(entity.getVehicleId())
+                .vehicleType(entity.getVehicleType())
                 .vin(entity.getVin())
                 .model(entity.getModel())
                 .status(entity.getStatus())

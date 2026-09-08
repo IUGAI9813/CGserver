@@ -29,5 +29,5 @@ logging:
 jwt:
   # Base64 encoded or 256-bit secret key
   secret: c29tZS12ZXJ5LXNlY3VyZS1hbmQtbG9uZy1zZWNyZXQta2V5LWZvci1qd3QtY29yZWd1YXJkLXNvYy0yNTY=
-  access-expiration: 900000 # 15 minutes (in milliseconds)
-  refresh-expiration: 10800000 # 3 hours (in milliseconds)
+  access-expiration: 10800000 # 3 hours
+  refresh-expiration: 21600000 # 6 hours
