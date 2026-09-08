@@ -19,7 +19,7 @@ public class AuditLogService {
 
     private AuditLogRepository repository;
 
-
+  // 사용 차량 정지 로그 기록
     @Transactional
     public void record(String userId, AuditAction auditAction, TargetEntity targetEntity, Map<String, Object> details){
 
@@ -43,6 +43,7 @@ public class AuditLogService {
 
     }
 
+    // 암호화키 생성
     private String sha256(String input) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
