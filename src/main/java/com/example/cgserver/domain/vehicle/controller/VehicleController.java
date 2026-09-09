@@ -32,7 +32,7 @@ public class VehicleController {
     }
 
     // 차량 비상 정지
-    @PostMapping("/lokdown/{vehicleId}")
+    @PostMapping("/loсkdown/{vehicleId}")
     public ResponseEntity<VehicleReponse> lokdownVehice(
             @PathVariable String vehicleId,
             @RequestBody VehicleLockReq request,
@@ -44,11 +44,5 @@ public class VehicleController {
 
         return  ResponseEntity.ok(service.lockdownVehicle(vehicleId, userId, reason));
     }
-
-
-
-
-
-
 
 }
