@@ -41,6 +41,12 @@ public class AuditEntity {
     @Column(name = "CRYPTO_HASH", nullable = false, length = 64)
     private String cryptoHash;
 
+    @Column(name = "LEVEL" , nullable = false, length = 20)
+    private String level;
+
+    @Column(name = "SOURCE", nullable = false, length = 100)
+    private String source;
+
     @Column(name = "PERFORMED_AT", nullable = false, updatable = false)
     private OffsetDateTime performedAt;
 

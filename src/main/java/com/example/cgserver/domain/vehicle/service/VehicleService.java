@@ -2,6 +2,7 @@ package com.example.cgserver.domain.vehicle.service;
 
 import com.example.cgserver.domain.audit.entity.AuditAction;
 import com.example.cgserver.domain.audit.entity.AuditEntity;
+import com.example.cgserver.domain.audit.entity.AuditLevel;
 import com.example.cgserver.domain.audit.entity.TargetEntity;
 import com.example.cgserver.domain.audit.repository.AuditLogRepository;
 import com.example.cgserver.domain.audit.service.AuditLogService;
@@ -50,6 +51,7 @@ public class VehicleService {
         vehicleRepository.save(vehicleEntity);
 
         auditLogService.record(userId,
+                AuditLevel.AUDIT_SECURITY,
                 AuditAction.EMERGENCY_STOP,
                 TargetEntity.TB_VEHICLES,
                 Map.of("vehicleId",vehicleId,
