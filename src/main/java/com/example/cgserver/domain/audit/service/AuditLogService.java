@@ -1,5 +1,6 @@
 package com.example.cgserver.domain.audit.service;
 
+import com.example.cgserver.domain.audit.dto.AuditLogResponse;
 import com.example.cgserver.domain.audit.entity.AuditAction;
 import com.example.cgserver.domain.audit.entity.AuditEntity;
 import com.example.cgserver.domain.audit.entity.TargetEntity;
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -18,6 +20,11 @@ import java.util.Map;
 public class AuditLogService {
 
     private AuditLogRepository repository;
+
+
+    public List<AuditLogResponse> getList(){
+        return repository.findAll().stream().map(AuditLogResponse::fromEntity).toList();
+    }
 
   // 사용 차량 정지 로그 기록
     @Transactional
