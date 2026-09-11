@@ -48,7 +48,7 @@ public class VehicleService {
 
         vehicleEntity.setStatus("VEH_EMERGENCY_STOP");
         vehicleEntity.setSpeedLimit(0.0);
-        vehicleRepository.save(vehicleEntity);
+       // vehicleRepository.save(vehicleEntity);
 
         auditLogService.record(userId,
                 AuditLevel.AUDIT_SECURITY,

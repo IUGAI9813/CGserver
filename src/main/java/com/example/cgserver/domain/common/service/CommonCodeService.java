@@ -7,8 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 @Service
@@ -17,26 +18,34 @@ public class CommonCodeService {
 
     private final JdbcTemplate jdbcTemplate;
 
-    private final Map<String, String> codeCache = new ConcurrentHashMap<>();
+    private volatile Map<String, String> codeCache =  Collections.emptyMap();
 
     @PostConstruct
     public void init(){
        refreshCache();
     }
 
-    public void refreshCache(){
+    public synchronized void refreshCache(){
         String sql = "SELECT GROUP_CODE, CODE, CODE_NAME FROM TB_COMMON_CODE WHERE IS_ACTIVE = 'Y'";
 
         try {
 
+            Map<String, String> newCache = new HashMap<>();
+ 
             jdbcTemplate.query(sql, rs -> {
                 String groupCode = rs.getString("GROUP_CODE");
                 String code = rs.getString("CODE");
                 String codeName = rs.getString("CODE_NAME");
+            
+                if (groupCode != null && code != null){
+                      newCache.put(groupCode + ":" + code , codeName);
+                }
 
-
-                codeCache.put(groupCode + ":" + code , codeName);
             });
+            
+          
+            this.codeCache = Collections.unmodifiableMap(newCache);
+            
             log.info("================ COMMON CODES CACHE DUMP ================");
             codeCache.forEach((key, value) -> log.info("CACHE KEY: '{}' => VALUE: '{}'", key, value));
             log.info("TOTAL ITEMS IN CACHE: {}", codeCache.size());
@@ -49,7 +58,7 @@ public class CommonCodeService {
 
     public String getCache(String groupCode , String code) {
         if (code == null) return  null;
-        return codeCache.getOrDefault(groupCode + ":" + code, code);
+        return codeCache.get(groupCode + ":" + code);
     }
 
 }

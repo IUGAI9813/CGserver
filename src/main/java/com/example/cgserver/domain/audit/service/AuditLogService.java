@@ -6,34 +6,63 @@ import com.example.cgserver.domain.audit.entity.AuditEntity;
 import com.example.cgserver.domain.audit.entity.AuditLevel;
 import com.example.cgserver.domain.audit.entity.TargetEntity;
 import com.example.cgserver.domain.audit.repository.AuditLogRepository;
+import com.example.cgserver.domain.audit.dto.AuditLogSearchRequest;
 import com.example.cgserver.domain.common.service.CommonCodeService;
+import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.util.ArrayList;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @AllArgsConstructor
 public class AuditLogService {
 
-    private AuditLogRepository repository;
+    private final AuditLogRepository repository;
 
-    private CommonCodeService commonCodeService;
+    private final CommonCodeService commonCodeService;
 
-    public List<AuditLogResponse> getList(){
-        return repository.findAll().stream().map
-                (entity -> {
-                    String codeName = commonCodeService.getCache("AUDIT_LEVEL", entity.getLevel());
-                    return  AuditLogResponse.fromEntity(entity, codeName);
-                }).toList();
+    @Transactional(readOnly = true)
+    public Page<AuditLogResponse> getList(AuditLogSearchRequest request, Pageable pageable) {
+        Specification<AuditEntity> spec = (root, query, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            if (request != null) {
+                if (StringUtils.hasText(request.getLevel())) {
+                    predicates.add(cb.equal(root.get("level"), request.getLevel().trim()));
+                }
+                if (StringUtils.hasText(request.getUserId())) {
+                    predicates.add(cb.like(cb.lower(root.get("userId")), "%" + request.getUserId().trim().toLowerCase() + "%"));
+                }
+                if (request.getStartDate() != null) {
+                    predicates.add(cb.greaterThanOrEqualTo(root.get("performedAt"), request.getStartDate()));
+                }
+                if (request.getEndDate() != null) {
+                    predicates.add(cb.lessThanOrEqualTo(root.get("performedAt"), request.getEndDate()));
+                }
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        return repository.findAll(spec, pageable).map(entity -> {
+            String codeName = commonCodeService.getCache("AUDIT_LEVEL", entity.getLevel());
+            return AuditLogResponse.fromEntity(entity, codeName);
+        });
     }
 
   // 사용 차량 정지 로그 기록
