@@ -1,11 +1,12 @@
 package com.example.cgserver.domain.vehicle.controller;
 
-
 import com.example.cgserver.domain.vehicle.dto.VehicleLockReq;
 import com.example.cgserver.domain.vehicle.dto.VehicleReponse;
+import com.example.cgserver.domain.vehicle.dto.VehicleSaveReq;
 import com.example.cgserver.domain.vehicle.service.VehicleService;
 import com.example.cgserver.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,14 +22,26 @@ public class VehicleController {
 
     // 차량 리스트
     @GetMapping
-    public ResponseEntity<List<VehicleReponse>> getList(){
-        return  ResponseEntity.ok(service.getAllVehicles());
+    public ResponseEntity<List<VehicleReponse>> getList() {
+        return ResponseEntity.ok(service.getAllVehicles());
+    }
+
+    // 차량 등록
+    @PostMapping
+    public ResponseEntity<VehicleReponse> addVehicle(
+            @RequestBody VehicleSaveReq request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        String userId = (userDetails != null && userDetails.getUser() != null)
+                ? userDetails.getUser().getUserId()
+                : "SYSTEM";
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(service.addVehicle(request, userId));
     }
 
     // 차량 정보
     @GetMapping("/{vehicleId}")
-    public ResponseEntity<VehicleReponse> getById(@PathVariable String vehicleId){
-        return  ResponseEntity.ok(service.getById(vehicleId));
+    public ResponseEntity<VehicleReponse> getById(@PathVariable String vehicleId) {
+        return ResponseEntity.ok(service.getById(vehicleId));
     }
 
     // 차량 비상 정지
@@ -36,13 +49,13 @@ public class VehicleController {
     public ResponseEntity<VehicleReponse> lokdownVehice(
             @PathVariable String vehicleId,
             @RequestBody VehicleLockReq request,
-            @AuthenticationPrincipal CustomUserDetails userDetails){
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
         String reason = (request != null && request.reason() != null) ? request.reason() : "";
+        String userId = userDetails != null && userDetails.getUser() != null
+                ? userDetails.getUser().getUserId()
+                : "SYSTEM";
 
-        String userId = userDetails.getUser().getUserId();
-
-        return  ResponseEntity.ok(service.lockdownVehicle(vehicleId, userId, reason));
+        return ResponseEntity.ok(service.lockdownVehicle(vehicleId, userId, reason));
     }
-
 }

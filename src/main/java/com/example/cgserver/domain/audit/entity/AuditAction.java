@@ -13,5 +13,6 @@ public enum AuditAction {
     REVOKE_API_KEY,
     USER_LOGIN,
     USER_LOGOUT,
-    ACCOUNT_LOCKED
+    ACCOUNT_LOCKED,
+    CREATE_VEHICLE
 }

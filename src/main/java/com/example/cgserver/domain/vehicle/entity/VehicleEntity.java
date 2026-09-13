@@ -1,10 +1,12 @@
 package com.example.cgserver.domain.vehicle.entity;
 
-
+import com.example.cgserver.domain.device.entity.DeviceEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "TB_VEHICLES")
@@ -53,6 +55,10 @@ public class VehicleEntity {
     @Column(name = "CREATED_AT", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<DeviceEntity> devices = new ArrayList<>();
+
     @PrePersist
     public void prePersist() {
         if (this.createdAt == null) {
@@ -60,6 +66,8 @@ public class VehicleEntity {
         }
     }
 
-
-
+    public void addDevice(DeviceEntity device) {
+        devices.add(device);
+        device.setVehicle(this);
+    }
 }
