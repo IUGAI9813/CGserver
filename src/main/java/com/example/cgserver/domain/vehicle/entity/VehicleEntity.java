@@ -61,6 +61,9 @@ public class VehicleEntity {
 
     @PrePersist
     public void prePersist() {
+        if (this.vehicleId == null || this.vehicleId.isBlank()) {
+            this.vehicleId = "VEH-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        }
         if (this.createdAt == null) {
             this.createdAt = OffsetDateTime.now();
         }

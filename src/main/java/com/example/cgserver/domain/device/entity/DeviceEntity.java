@@ -43,6 +43,9 @@ public class DeviceEntity {
 
     @PrePersist
     public void prePersist() {
+        if (this.deviceId == null || this.deviceId.isBlank()) {
+            this.deviceId = "DEV-" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 10).toUpperCase();
+        }
         if (this.createdAt == null) {
             this.createdAt = OffsetDateTime.now();
         }

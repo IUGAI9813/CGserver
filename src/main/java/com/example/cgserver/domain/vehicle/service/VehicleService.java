@@ -4,6 +4,7 @@ import com.example.cgserver.domain.audit.entity.AuditAction;
 import com.example.cgserver.domain.audit.entity.AuditLevel;
 import com.example.cgserver.domain.audit.entity.TargetEntity;
 import com.example.cgserver.domain.audit.service.AuditLogService;
+import com.example.cgserver.domain.common.service.CommonCodeService;
 import com.example.cgserver.domain.vehicle.dto.VehicleReponse;
 import com.example.cgserver.domain.vehicle.dto.VehicleSaveReq;
 import com.example.cgserver.domain.vehicle.entity.VehicleEntity;
@@ -23,6 +24,7 @@ public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
     private final AuditLogService auditLogService;
+    private final CommonCodeService commonCodeService;
 
     @Transactional(readOnly = true)
     public List<VehicleReponse> getAllVehicles() {
@@ -38,27 +40,43 @@ public class VehicleService {
 
     @Transactional
     public VehicleReponse addVehicle(VehicleSaveReq req, String userId) {
-        // 1. Проверка на дубликат ID машины
-        if (vehicleRepository.existsById(req.getVehicleId())) {
+
+        // 1. Проверка уникальности vehicleId (если передан вручную)
+        if (req.getVehicleId() != null && !req.getVehicleId().isBlank() && vehicleRepository.existsById(req.getVehicleId())) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이미 존재하는 차량 ID입니다: " + req.getVehicleId());
         }
 
-        // 2. Проверка на дубликаты deviceId внутри входящего массива
+        // 2. Проверка уникальности VIN
+        if (req.getVin() != null && vehicleRepository.existsByVin(req.getVin())) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이미 존재하는 차대번호(VIN)입니다: " + req.getVin());
+        }
+
+        // 3. Валидация кодов
+        if (req.getVehicleType() != null && !commonCodeService.isValidCode("VEH_TYPE", req.getVehicleType())) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 차량 타입 코드입니다");
+        }
+
+        if (req.getStatus() != null && !commonCodeService.isValidCode("VEH_STATUS", req.getStatus())) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 차량 상태 코드입니다: " + req.getStatus());
+        }
+
+        // 4. Валидация устройств
         if (req.getDevices() != null && !req.getDevices().isEmpty()) {
-            long uniqueCount = req.getDevices().stream()
-                    .map(VehicleSaveReq.DeviceSaveReq::getDeviceId)
-                    .distinct()
-                    .count();
-            if (uniqueCount != req.getDevices().size()) {
-                throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "중복된 Device ID가 존재합니다.");
+            for (VehicleSaveReq.DeviceSaveReq dev : req.getDevices()) {
+                if (dev.getDeviceType() != null && !commonCodeService.isValidCode("DEVICE_TYPE", dev.getDeviceType())) {
+                    throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 디바이스 타입 코드입니다: " + dev.getDeviceType());
+                }
+                if (dev.getStatus() != null && !commonCodeService.isValidCode("DEVICE_STATUS", dev.getStatus())) {
+                    throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 디바이스 상태 코드입니다: " + dev.getStatus());
+                }
             }
         }
 
-        // 3. Сохранение машины и её девайсов через каскад
+
         VehicleEntity vehicle = req.toEntity();
         VehicleEntity saved = vehicleRepository.save(vehicle);
 
-        // 4. Запись в аудит
+    
         String operatorId = (userId != null && !userId.isBlank()) ? userId : "SYSTEM";
         auditLogService.record(
                 operatorId,

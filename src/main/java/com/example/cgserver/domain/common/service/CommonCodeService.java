@@ -1,9 +1,11 @@
 package com.example.cgserver.domain.common.service;
 
 
+import com.example.cgserver.domain.common.repository.СommonCodeRepository;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +18,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class CommonCodeService {
 
+
     private final JdbcTemplate jdbcTemplate;
+
 
     private volatile Map<String, String> codeCache =  Collections.emptyMap();
 
@@ -55,6 +59,17 @@ public class CommonCodeService {
             log.error("Failed to load code from database", e);
         }
     }
+
+
+
+    public boolean isValidCode(String groupCode , String code){
+        if ( groupCode == null || code ==  null){
+             return  false;
+        }
+        return  this.codeCache.containsKey(groupCode + ":" + code);
+    }
+
+
 
     public String getCache(String groupCode , String code) {
         if (code == null) return  null;

@@ -1,5 +1,6 @@
 package com.example.cgserver.domain.telemetry.service;
 
+import com.example.cgserver.domain.device.repository.DeviceRepository;
 import com.example.cgserver.domain.telemetry.dto.TelemetryResponse;
 import com.example.cgserver.domain.telemetry.dto.TelemetrySaveReq;
 import com.example.cgserver.domain.telemetry.entity.TelemetryLogEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 public class TelemetryService {
 
     private final TelemetryLogRepository telemetryLogRepository;
+    private final DeviceRepository deviceRepository;
     private final VehicleRepository vehicleRepository;
 
     @Transactional
@@ -29,9 +31,15 @@ public class TelemetryService {
             throw new BusinessException(ErrorCode.VEHICLE_NOT_FOUND);
         }
 
+        if (!deviceRepository.existsById(req.getDeviceId())){
+            throw  new BusinessException(ErrorCode.DEVICE_NOT_FOUND);
+        }
+
         OffsetDateTime recordedAt = req.getRecordedAt() != null
                 ? req.getRecordedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime()
                 : OffsetDateTime.now();
+
+
 
         TelemetryLogEntity entity = TelemetryLogEntity.builder()
                 .vehicleId(req.getVehicleId())

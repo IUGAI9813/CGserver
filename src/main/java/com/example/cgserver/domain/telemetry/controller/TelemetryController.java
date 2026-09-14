@@ -19,14 +19,13 @@ public class TelemetryController {
 
     private final TelemetryService telemetryService;
 
-    // Сохранение единичной записи телеметрии
+
     @PostMapping
     public ResponseEntity<TelemetryResponse> saveTelemetry(@RequestBody TelemetrySaveReq request) {
         TelemetryResponse response = telemetryService.saveTelemetry(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Пакетное сохранение телеметрии
     @PostMapping("/batch")
     public ResponseEntity<List<TelemetryResponse>> saveBatchTelemetry(@RequestBody List<TelemetrySaveReq> requests) {
         List<TelemetryResponse> responses = telemetryService.saveBatchTelemetry(requests);
