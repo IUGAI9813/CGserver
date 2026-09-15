@@ -86,7 +86,6 @@ public class AuthService {
                 user.setIsActive("N");
             }
 
-            userRepository.save(user);
 
             if (failedAttempts >= 5) {
                 throw new BusinessException(ErrorCode.ACCOUNT_LOCKED, "비밀번호 5회 연속 오류로 계정이 잠겼습니다.");
@@ -97,7 +96,7 @@ public class AuthService {
 
         user.setFailedAttempts(0);
         user.setLastLoginAt(OffsetDateTime.now());
-        userRepository.save(user);
+
 
         return createTokenResponse(user);
     }

@@ -1,5 +1,6 @@
 package com.example.cgserver.domain.telemetry.repository;
 
+import com.example.cgserver.domain.telemetry.dto.TelemetryResponse;
 import com.example.cgserver.domain.telemetry.entity.TelemetryLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -24,4 +25,7 @@ public interface TelemetryLogRepository extends JpaRepository<TelemetryLogEntity
     );
 
     Optional<TelemetryLogEntity> findTopByVehicleIdAndMetricTypeOrderByRecordedAtDesc(String vehicleId, String metricType);
+
+    Optional<TelemetryLogEntity> findByDeviceIdOrderByRecordedAtDesc(String deviceId);
+
 }

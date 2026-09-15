@@ -5,6 +5,10 @@ import com.example.cgserver.domain.audit.entity.AuditLevel;
 import com.example.cgserver.domain.audit.entity.TargetEntity;
 import com.example.cgserver.domain.audit.service.AuditLogService;
 import com.example.cgserver.domain.common.service.CommonCodeService;
+import com.example.cgserver.domain.device.entity.DeviceEntity;
+import com.example.cgserver.domain.device.repository.DeviceRepository;
+import com.example.cgserver.domain.telemetry.entity.TelemetryLogEntity;
+import com.example.cgserver.domain.telemetry.repository.TelemetryLogRepository;
 import com.example.cgserver.domain.vehicle.dto.VehicleReponse;
 import com.example.cgserver.domain.vehicle.dto.VehicleSaveReq;
 import com.example.cgserver.domain.vehicle.entity.VehicleEntity;
@@ -23,8 +27,27 @@ import java.util.Map;
 public class VehicleService {
 
     private final VehicleRepository vehicleRepository;
+    private final DeviceRepository deviceRepository;
     private final AuditLogService auditLogService;
+    private final TelemetryLogRepository telemetryLogRepository;
     private final CommonCodeService commonCodeService;
+
+
+
+    public List<VehicleReponse.DeviceResponse> getVehiclesDevices(String vehicleId) {
+
+        if (!vehicleRepository.existsById(vehicleId)){
+            throw new BusinessException(ErrorCode.VEHICLE_NOT_FOUND);
+        }
+
+         List<DeviceEntity> deviceEntities = deviceRepository.findByVehicle_VehicleId(vehicleId);
+
+         return  deviceEntities.stream().map(device -> {
+             TelemetryLogEntity entity = telemetryLogRepository.findByDeviceIdOrderByRecordedAtDesc(device.getDeviceId()).orElse(null);
+             return  VehicleReponse.DeviceResponse.fromEntity(device, entity);
+         }).toList();
+    }
+
 
     @Transactional(readOnly = true)
     public List<VehicleReponse> getAllVehicles() {
@@ -41,17 +64,17 @@ public class VehicleService {
     @Transactional
     public VehicleReponse addVehicle(VehicleSaveReq req, String userId) {
 
-        // 1. Проверка уникальности vehicleId (если передан вручную)
+
         if (req.getVehicleId() != null && !req.getVehicleId().isBlank() && vehicleRepository.existsById(req.getVehicleId())) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이미 존재하는 차량 ID입니다: " + req.getVehicleId());
         }
 
-        // 2. Проверка уникальности VIN
+
         if (req.getVin() != null && vehicleRepository.existsByVin(req.getVin())) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "이미 존재하는 차대번호(VIN)입니다: " + req.getVin());
         }
 
-        // 3. Валидация кодов
+
         if (req.getVehicleType() != null && !commonCodeService.isValidCode("VEH_TYPE", req.getVehicleType())) {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 차량 타입 코드입니다");
         }
@@ -60,7 +83,6 @@ public class VehicleService {
             throw new BusinessException(ErrorCode.INVALID_INPUT_VALUE, "유효하지 않은 차량 상태 코드입니다: " + req.getStatus());
         }
 
-        // 4. Валидация устройств
         if (req.getDevices() != null && !req.getDevices().isEmpty()) {
             for (VehicleSaveReq.DeviceSaveReq dev : req.getDevices()) {
                 if (dev.getDeviceType() != null && !commonCodeService.isValidCode("DEVICE_TYPE", dev.getDeviceType())) {

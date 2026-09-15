@@ -1,6 +1,8 @@
 package com.example.cgserver.domain.vehicle.dto;
 
 import com.example.cgserver.domain.device.entity.DeviceEntity;
+import com.example.cgserver.domain.telemetry.dto.TelemetryResponse;
+import com.example.cgserver.domain.telemetry.entity.TelemetryLogEntity;
 import com.example.cgserver.domain.vehicle.entity.VehicleEntity;
 import lombok.*;
 
@@ -62,8 +64,13 @@ public class VehicleReponse {
         private String firmwareVersion;
         private OffsetDateTime lastDiagnosticAt;
         private OffsetDateTime createdAt;
+        private TelemetryResponse latestTelemetry;
 
         public static DeviceResponse fromEntity(DeviceEntity entity) {
+            return fromEntity(entity, null);
+        }
+
+        public static DeviceResponse fromEntity(DeviceEntity entity, TelemetryLogEntity latestTelemetry) {
             return DeviceResponse.builder()
                     .deviceId(entity.getDeviceId())
                     .deviceType(entity.getDeviceType())
@@ -72,6 +79,7 @@ public class VehicleReponse {
                     .firmwareVersion(entity.getFirmwareVersion())
                     .lastDiagnosticAt(entity.getLastDiagnosticAt())
                     .createdAt(entity.getCreatedAt())
+                    .latestTelemetry(latestTelemetry != null ? TelemetryResponse.fromEntity(latestTelemetry) : null)
                     .build();
         }
     }

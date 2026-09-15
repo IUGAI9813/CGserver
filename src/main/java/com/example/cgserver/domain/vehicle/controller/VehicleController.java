@@ -26,6 +26,15 @@ public class VehicleController {
         return ResponseEntity.ok(service.getAllVehicles());
     }
 
+
+
+    @GetMapping("/{vehicle_id}/devices")
+   public  ResponseEntity<List<VehicleReponse.DeviceResponse>> getVehicleDevices(@PathVariable String vehicle_id){
+
+        return ResponseEntity.ok(service.getVehiclesDevices(vehicle_id));
+    }
+
+
     // 차량 등록
     @PostMapping
     public ResponseEntity<VehicleReponse> addVehicle(
@@ -43,6 +52,8 @@ public class VehicleController {
     public ResponseEntity<VehicleReponse> getById(@PathVariable String vehicleId) {
         return ResponseEntity.ok(service.getById(vehicleId));
     }
+
+
 
     // 차량 비상 정지
     @PostMapping("/loсkdown/{vehicleId}")
