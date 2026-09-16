@@ -8,6 +8,7 @@ import com.example.cgserver.domain.audit.entity.TargetEntity;
 import com.example.cgserver.domain.audit.repository.AuditLogRepository;
 import com.example.cgserver.domain.audit.dto.AuditLogSearchRequest;
 import com.example.cgserver.domain.common.service.CommonCodeService;
+import com.example.cgserver.global.Helper;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,8 @@ import org.springframework.data.domain.Pageable;
 public class AuditLogService {
 
     private final AuditLogRepository repository;
+
+    private  final Helper helper;
 
     private final CommonCodeService commonCodeService;
 
@@ -75,7 +78,7 @@ public class AuditLogService {
 
         String rawData =  previousHash + userId + auditAction.name() + targetEntity.name() + (details != null ? details.toString() : "");
 
-        String cryptoHash = sha256(rawData);
+        String cryptoHash = helper.sha256(rawData);
 
         AuditEntity entity = AuditEntity.builder()
                 .userId(userId)
@@ -116,16 +119,7 @@ public class AuditLogService {
         }
         return "SYSTEM"; //  kafka/cron
     }
-    // 암호화키 생성
-    private String sha256(String input) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);
-        } catch (Exception e) {
-            return "hash_error";
-        }
-    }
+
 
 
 }
