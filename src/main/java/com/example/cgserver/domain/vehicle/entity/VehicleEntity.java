@@ -33,6 +33,10 @@ public class VehicleEntity {
     @Column(name = "STATUS", nullable = false, length = 30)
     private String status;
 
+    @Column(name = "BATTERY", nullable = false)
+    @Builder.Default
+    private Integer battery = 100;
+
     @Column(name = "SPEED_LIMIT", nullable = false)
     @Builder.Default
     private Double speedLimit = 60.0;
@@ -66,6 +70,9 @@ public class VehicleEntity {
         }
         if (this.createdAt == null) {
             this.createdAt = OffsetDateTime.now();
+        }
+        if (this.battery == null) {
+            this.battery = 100;
         }
     }
 

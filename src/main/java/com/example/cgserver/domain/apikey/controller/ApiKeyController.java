@@ -2,17 +2,16 @@ package com.example.cgserver.domain.apikey.controller;
 
 
 import com.example.cgserver.domain.apikey.dto.ApiKeyAddReq;
+import com.example.cgserver.domain.apikey.dto.ApiKeyInfoResponse;
 import com.example.cgserver.domain.apikey.dto.ApiKeyResponse;
 import com.example.cgserver.domain.apikey.service.ApiKeyService;
 import com.example.cgserver.global.security.CustomUserDetails;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/key")
@@ -20,6 +19,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ApiKeyController {
 
     private final ApiKeyService service;
+
+    @GetMapping
+    public ResponseEntity<List<ApiKeyInfoResponse>> getList() {
+        return ResponseEntity.ok(service.getList());
+    }
 
 
     @PostMapping

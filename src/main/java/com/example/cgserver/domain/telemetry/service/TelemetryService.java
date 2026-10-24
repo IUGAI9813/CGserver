@@ -26,7 +26,7 @@ public class TelemetryService {
 
     @Transactional
     public TelemetryResponse saveTelemetry(TelemetrySaveReq req) {
-        // Проверяем существование транспортного средства
+
         if (!vehicleRepository.existsById(req.getVehicleId())) {
             throw new BusinessException(ErrorCode.VEHICLE_NOT_FOUND);
         }

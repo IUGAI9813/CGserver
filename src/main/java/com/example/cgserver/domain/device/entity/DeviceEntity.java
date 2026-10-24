@@ -29,6 +29,8 @@ public class DeviceEntity {
     @Column(name = "SERIAL_NUMBER", nullable = false, length = 50)
     private String serialNumber;
 
+
+
     @Column(name = "STATUS", nullable = false, length = 30)
     private String status;
 

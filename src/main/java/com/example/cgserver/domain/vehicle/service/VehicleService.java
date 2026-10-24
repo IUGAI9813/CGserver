@@ -112,6 +112,8 @@ public class VehicleService {
                 )
         );
 
+        //to-do regist-devices
+
         return VehicleReponse.fromEntity(saved);
     }
 

@@ -21,6 +21,7 @@ public class VehicleReponse {
     private String vehicleType;
     private String model;
     private String status;
+    private Integer battery;
     private Double speedLimit;
     private String assignedZone;
     private String firmwareVersion;
@@ -38,6 +39,7 @@ public class VehicleReponse {
                 .vin(entity.getVin())
                 .model(entity.getModel())
                 .status(entity.getStatus())
+                .battery(entity.getBattery())
                 .speedLimit(entity.getSpeedLimit())
                 .assignedZone(entity.getAssignedZone())
                 .firmwareVersion(entity.getFirmwareVersion())

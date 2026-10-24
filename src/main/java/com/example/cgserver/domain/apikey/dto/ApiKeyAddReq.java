@@ -1,8 +1,11 @@
 package com.example.cgserver.domain.apikey.dto;
 
 
-import com.example.cgserver.domain.apikey.entity.ApiKeyEntity;
+import com.example.cgserver.domain.apikey.entity.KeyType;
 import lombok.*;
+
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 @Getter
 @Setter
@@ -12,8 +15,8 @@ import lombok.*;
 public class ApiKeyAddReq {
 
     private String keyName;
-    private String keyType;
-    private String revoked_at;
+    private KeyType keyType;
+    private LocalDate revokedAt;
     private boolean isDemo;
 
 

@@ -18,6 +18,7 @@ public class VehicleSaveReq {
     private String vin;
     private String model;
     private String status;
+    private Integer battery;
     private Double speedLimit;
     private String assignedZone;
     private String firmwareVersion;
@@ -33,6 +34,7 @@ public class VehicleSaveReq {
                 .vin(this.vin)
                 .model(this.model)
                 .status(this.status != null ? this.status : "VEH_ACTIVE")
+                .battery(this.battery != null ? this.battery : 100)
                 .speedLimit(this.speedLimit != null ? this.speedLimit : 60.0)
                 .assignedZone(this.assignedZone)
                 .firmwareVersion(this.firmwareVersion)

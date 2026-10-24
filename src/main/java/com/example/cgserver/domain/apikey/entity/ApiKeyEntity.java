@@ -19,16 +19,17 @@ public class ApiKeyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "KEY_ID")
-    private Long key_id;
+    private Long keyId;
 
     @Column(name ="KEY_NAME", nullable = false, length = 100)
-    private String key_name;
+    private String keyName;
 
     @Column(name="API_KEY_HASH", nullable = false, length = 255)
     private String apiKey;
 
+    @Enumerated(EnumType.STRING)
     @Column(name="KEY_TYPE", nullable = false, length = 30)
-    private String key_type;
+    private KeyType keyType;
 
     @Column(name="STATUS", nullable = false, length = 20)
     private String status;
