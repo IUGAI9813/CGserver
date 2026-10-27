@@ -27,7 +27,16 @@ public enum ErrorCode {
 
     // Auth & JWT
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "A001", "유효하지 않은 토큰입니다."),
-    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "A002", "만료된 토큰입니다.");
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "A002", "만료된 토큰입니다."),
+
+    // 2. Когда API-ключ неверный или не найден в базе
+    INVALID_API_KEY(HttpStatus.UNAUTHORIZED, "A004", "유효하지 않은 API 인증 키입니다."),
+    // 3. (Полезно) Когда ключ отозван (REVOKED) или истёк
+    EXPIRED_API_KEY(HttpStatus.UNAUTHORIZED, "A005", "폐기되었거나 만료된 API 키입니다."),
+    // 4. (Полезно) Когда ключ рабочий, но его тип не подходит (например, TELEMETRY вместо VEHICLE)
+    FORBIDDEN_KEY_TYPE(HttpStatus.FORBIDDEN, "A006", "차량 등록 권한이 없는 API 키 유형입니다."),
+    DAILY_LIMIT_EXCEEDED(HttpStatus.FORBIDDEN, "A007", "한도 초과되었습니다"),
+    API_KEY_REQUIRED(HttpStatus.UNAUTHORIZED, "A003", "API 인증 키가 누락되었습니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

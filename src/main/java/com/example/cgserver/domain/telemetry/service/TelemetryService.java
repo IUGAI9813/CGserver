@@ -3,8 +3,12 @@ package com.example.cgserver.domain.telemetry.service;
 import com.example.cgserver.domain.device.repository.DeviceRepository;
 import com.example.cgserver.domain.telemetry.dto.TelemetryResponse;
 import com.example.cgserver.domain.telemetry.dto.TelemetrySaveReq;
+import com.example.cgserver.domain.telemetry.entity.TelemetryDtlEntity;
+import com.example.cgserver.domain.telemetry.entity.TelemetryDtlId;
 import com.example.cgserver.domain.telemetry.entity.TelemetryLogEntity;
+import com.example.cgserver.domain.telemetry.repository.TelemetryDtlRepository;
 import com.example.cgserver.domain.telemetry.repository.TelemetryLogRepository;
+import com.example.cgserver.domain.vehicle.dto.VehicleSaveReq;
 import com.example.cgserver.domain.vehicle.repository.VehicleRepository;
 import com.example.cgserver.global.error.BusinessException;
 import com.example.cgserver.global.error.ErrorCode;
@@ -23,6 +27,27 @@ public class TelemetryService {
     private final TelemetryLogRepository telemetryLogRepository;
     private final DeviceRepository deviceRepository;
     private final VehicleRepository vehicleRepository;
+    private final TelemetryDtlRepository telemetryDtlRepository;
+
+
+    @Transactional
+     public void saveDtl(VehicleSaveReq vehicleSaveReq){
+
+         for (VehicleSaveReq.DeviceSaveReq item : vehicleSaveReq.getDevices()) {
+
+             TelemetryDtlEntity telemetryDtlEntity = TelemetryDtlEntity.builder()
+                     .vehicleId(vehicleSaveReq.getVehicleId())
+                     .deviceId(item.getDeviceId())
+                     .metricType(item.getMetricType())
+                     .currentValue(0d)
+                     .unit(item.getMetricType())
+                     .recordedAt(OffsetDateTime.now())
+                     .updatedAt(OffsetDateTime.now())
+                     .build();
+
+             telemetryDtlRepository.save(telemetryDtlEntity);
+         }
+     }
 
     @Transactional
     public TelemetryResponse saveTelemetry(TelemetrySaveReq req) {

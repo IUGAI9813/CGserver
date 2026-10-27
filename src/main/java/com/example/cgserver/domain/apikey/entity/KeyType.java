@@ -11,4 +11,6 @@ public enum KeyType {
     VEHICLE(50);
 
     private final int demoDailyLimit;
+
+
 }

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 public class TelemetrySaveReq {
 
+    private String apiKey;
     private String vehicleId;
     private String deviceId;
     private String metricType;

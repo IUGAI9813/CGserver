@@ -1,5 +1,6 @@
 package com.example.cgserver.domain.vehicle.service;
 
+import com.example.cgserver.domain.apikey.repository.ApiKeyRepository;
 import com.example.cgserver.domain.audit.entity.AuditAction;
 import com.example.cgserver.domain.audit.entity.AuditLevel;
 import com.example.cgserver.domain.audit.entity.TargetEntity;
@@ -29,6 +30,8 @@ public class VehicleService {
     private final VehicleRepository vehicleRepository;
     private final DeviceRepository deviceRepository;
     private final AuditLogService auditLogService;
+    private final ApiKeyRepository apiKeyRepository;
+
     private final TelemetryLogRepository telemetryLogRepository;
     private final CommonCodeService commonCodeService;
 
@@ -63,6 +66,10 @@ public class VehicleService {
 
     @Transactional
     public VehicleReponse addVehicle(VehicleSaveReq req, String userId) {
+
+          if (req.getApiKey() == null) {
+            throw  new BusinessException(ErrorCode.API_KEY_REQUIRED);
+          }
 
 
         if (req.getVehicleId() != null && !req.getVehicleId().isBlank() && vehicleRepository.existsById(req.getVehicleId())) {
@@ -111,8 +118,6 @@ public class VehicleService {
                         "deviceCount", saved.getDevices() != null ? String.valueOf(saved.getDevices().size()) : "0"
                 )
         );
-
-        //to-do regist-devices
 
         return VehicleReponse.fromEntity(saved);
     }

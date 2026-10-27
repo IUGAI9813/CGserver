@@ -46,8 +46,6 @@ public class CommonCodeService {
                 }
 
             });
-            
-          
             this.codeCache = Collections.unmodifiableMap(newCache);
             
             log.info("================ COMMON CODES CACHE DUMP ================");

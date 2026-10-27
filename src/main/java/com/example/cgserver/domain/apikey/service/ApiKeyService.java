@@ -4,8 +4,11 @@ import com.example.cgserver.domain.apikey.dto.ApiKeyAddReq;
 import com.example.cgserver.domain.apikey.dto.ApiKeyInfoResponse;
 import com.example.cgserver.domain.apikey.dto.ApiKeyResponse;
 import com.example.cgserver.domain.apikey.entity.ApiKeyEntity;
+import com.example.cgserver.domain.apikey.entity.KeyType;
 import com.example.cgserver.domain.apikey.repository.ApiKeyRepository;
 import com.example.cgserver.global.Helper;
+import com.example.cgserver.global.error.BusinessException;
+import com.example.cgserver.global.error.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,37 @@ public class ApiKeyService {
 
     private final ApiKeyRepository keyRepository;
     private final Helper helper;
+
+
+
+    public ApiKeyEntity apiKeyValidate (String apiKey, KeyType expectedType) {
+
+
+        if (apiKey == null) {
+            throw  new BusinessException(ErrorCode.API_KEY_REQUIRED);
+        }
+
+
+        String   hashApiKey = helper.sha256(apiKey);
+
+        ApiKeyEntity key = keyRepository.findByApiKey(hashApiKey)
+                .orElseThrow( () -> new BusinessException(ErrorCode.INVALID_API_KEY));
+
+
+        if (!"ACTIVE".equalsIgnoreCase(key.getStatus())){
+            throw  new BusinessException(ErrorCode.EXPIRED_API_KEY);
+        }
+
+        if (expectedType != null && key.getKeyType() != expectedType){
+            throw  new BusinessException(ErrorCode.FORBIDDEN_KEY_TYPE);
+        }
+
+        if (key.isDemo() && key.getDailyLimit() <= 0) {
+            throw new BusinessException(ErrorCode.DAILY_LIMIT_EXCEEDED);
+        }
+
+        return  key;
+    }
 
     // API키 저장(시뮬레이터 연동)
     @Transactional
@@ -62,4 +96,14 @@ public class ApiKeyService {
                 .toList();
     }
 
+
+    @Transactional
+    public void consumeLimit(ApiKeyEntity key) {
+
+        if (key.isDemo() && key.getDailyLimit() != null && key.getDailyLimit() > 0){
+            key.setDailyLimit(key.getDailyLimit() - 1);
+            keyRepository.save(key);
+        }
+
+    }
 }

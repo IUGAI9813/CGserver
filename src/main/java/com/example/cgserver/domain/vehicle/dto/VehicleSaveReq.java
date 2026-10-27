@@ -14,6 +14,7 @@ import java.util.List;
 public class VehicleSaveReq {
 
     private String vehicleId;
+    private String apiKey;
     private String vehicleType;
     private String vin;
     private String model;
@@ -61,6 +62,7 @@ public class VehicleSaveReq {
         private String deviceType;
         private String serialNumber;
         private String status;
+        private String metricType;
         private String firmwareVersion;
 
         public DeviceEntity toEntity() {

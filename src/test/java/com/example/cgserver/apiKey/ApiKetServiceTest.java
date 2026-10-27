@@ -16,11 +16,16 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.cgserver.global.error.BusinessException;
+import com.example.cgserver.global.error.ErrorCode;
+
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -218,7 +223,186 @@ public class ApiKetServiceTest {
         assertThat(first.getCreatedBy()).isEqualTo("admin");
         assertThat(first.getCreatedAt()).isEqualTo(now);
         assertThat(first.getRevokedAt()).isEqualTo(now.plusDays(90));
+    }
 
-        // ApiKeyInfoResponse не содержит поля с сырым ключом или хешем
+    // ==========================================
+    // apiKeyValidate Tests
+    // ==========================================
+
+    @Test
+    @DisplayName("apiKeyValidate - 정상 키와 올바른 타입이면 검증에 성공하고 엔티티를 반환한다")
+    void apiKeyValidate_success() {
+        // given
+        String rawKey = "cg_live_valid12345";
+        String hashedKey = helper.sha256(rawKey);
+        ApiKeyEntity mockEntity = ApiKeyEntity.builder()
+                .keyId(1L)
+                .keyName("vehicle-key")
+                .apiKey(hashedKey)
+                .keyType(KeyType.VEHICLE)
+                .status("ACTIVE")
+                .isDemo(true)
+                .dailyLimit(10)
+                .build();
+
+        when(keyRepository.findByApiKey(hashedKey)).thenReturn(Optional.of(mockEntity));
+
+        // when
+        ApiKeyEntity result = apiKeyService.apiKeyValidate(rawKey, KeyType.VEHICLE);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getKeyName()).isEqualTo("vehicle-key");
+        assertThat(result.getKeyType()).isEqualTo(KeyType.VEHICLE);
+    }
+
+    @Test
+    @DisplayName("apiKeyValidate - API 키가 null이면 API_KEY_REQUIRED 예외가 발생한다")
+    void apiKeyValidate_nullKey_throwsApiKeyRequired() {
+        // when & then
+        assertThatThrownBy(() -> apiKeyService.apiKeyValidate(null, KeyType.VEHICLE))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.API_KEY_REQUIRED);
+    }
+
+    @Test
+    @DisplayName("apiKeyValidate - DB에 존재하지 않는 키이면 INVALID_API_KEY 예외가 발생한다")
+    void apiKeyValidate_notFound_throwsInvalidApiKey() {
+        // given
+        String rawKey = "cg_live_unknown999";
+        String hashedKey = helper.sha256(rawKey);
+        when(keyRepository.findByApiKey(hashedKey)).thenReturn(Optional.empty());
+
+        // when & then
+        assertThatThrownBy(() -> apiKeyService.apiKeyValidate(rawKey, KeyType.VEHICLE))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.INVALID_API_KEY);
+    }
+
+    @Test
+    @DisplayName("apiKeyValidate - 키 상태가 ACTIVE가 아니면 EXPIRED_API_KEY 예외가 발생한다")
+    void apiKeyValidate_inactiveStatus_throwsExpiredApiKey() {
+        // given
+        String rawKey = "cg_live_revoked123";
+        String hashedKey = helper.sha256(rawKey);
+        ApiKeyEntity mockEntity = ApiKeyEntity.builder()
+                .apiKey(hashedKey)
+                .status("REVOKED")
+                .keyType(KeyType.VEHICLE)
+                .isDemo(false)
+                .build();
+
+        when(keyRepository.findByApiKey(hashedKey)).thenReturn(Optional.of(mockEntity));
+
+        // when & then
+        assertThatThrownBy(() -> apiKeyService.apiKeyValidate(rawKey, KeyType.VEHICLE))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.EXPIRED_API_KEY);
+    }
+
+    @Test
+    @DisplayName("apiKeyValidate - 기대하는 키 타입과 다르면 FORBIDDEN_KEY_TYPE 예외가 발생한다")
+    void apiKeyValidate_typeMismatch_throwsForbiddenKeyType() {
+        // given
+        String rawKey = "cg_live_telemetry123";
+        String hashedKey = helper.sha256(rawKey);
+        ApiKeyEntity mockEntity = ApiKeyEntity.builder()
+                .apiKey(hashedKey)
+                .status("ACTIVE")
+                .keyType(KeyType.TELEMETRY)
+                .isDemo(false)
+                .build();
+
+        when(keyRepository.findByApiKey(hashedKey)).thenReturn(Optional.of(mockEntity));
+
+        // when & then
+        assertThatThrownBy(() -> apiKeyService.apiKeyValidate(rawKey, KeyType.VEHICLE))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.FORBIDDEN_KEY_TYPE);
+    }
+
+    @Test
+    @DisplayName("apiKeyValidate - 데모 키의 일일 한도가 0 이하이면 DAILY_LIMIT_EXCEEDED 예외가 발생한다")
+    void apiKeyValidate_demoLimitExceeded_throwsDailyLimitExceeded() {
+        // given
+        String rawKey = "cg_live_demozero123";
+        String hashedKey = helper.sha256(rawKey);
+        ApiKeyEntity mockEntity = ApiKeyEntity.builder()
+                .apiKey(hashedKey)
+                .status("ACTIVE")
+                .keyType(KeyType.VEHICLE)
+                .isDemo(true)
+                .dailyLimit(0)
+                .build();
+
+        when(keyRepository.findByApiKey(hashedKey)).thenReturn(Optional.of(mockEntity));
+
+        // when & then
+        assertThatThrownBy(() -> apiKeyService.apiKeyValidate(rawKey, KeyType.VEHICLE))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.DAILY_LIMIT_EXCEEDED);
+    }
+
+    // ==========================================
+    // consumeLimit Tests
+    // ==========================================
+
+    @Test
+    @DisplayName("consumeLimit - 데모 키이고 한도가 남아있으면 dailyLimit이 1 감소하고 저장된다")
+    void consumeLimit_demoKey_decrementsLimitAndSaves() {
+        // given
+        ApiKeyEntity key = ApiKeyEntity.builder()
+                .keyId(1L)
+                .isDemo(true)
+                .dailyLimit(10)
+                .build();
+
+        // when
+        apiKeyService.consumeLimit(key);
+
+        // then
+        assertThat(key.getDailyLimit()).isEqualTo(9);
+        verify(keyRepository, times(1)).save(key);
+    }
+
+    @Test
+    @DisplayName("consumeLimit - 일반(운영) 키는 한도가 차감되지 않고 저장도 호출되지 않는다")
+    void consumeLimit_nonDemoKey_doesNothing() {
+        // given
+        ApiKeyEntity key = ApiKeyEntity.builder()
+                .keyId(2L)
+                .isDemo(false)
+                .dailyLimit(0)
+                .build();
+
+        // when
+        apiKeyService.consumeLimit(key);
+
+        // then
+        assertThat(key.getDailyLimit()).isEqualTo(0);
+        verify(keyRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("consumeLimit - 데모 키의 한도가 0이면 감소하지 않고 저장도 호출되지 않는다")
+    void consumeLimit_zeroLimit_doesNotGoNegative() {
+        // given
+        ApiKeyEntity key = ApiKeyEntity.builder()
+                .keyId(3L)
+                .isDemo(true)
+                .dailyLimit(0)
+                .build();
+
+        // when
+        apiKeyService.consumeLimit(key);
+
+        // then
+        assertThat(key.getDailyLimit()).isEqualTo(0);
+        verify(keyRepository, never()).save(any());
     }
 }
