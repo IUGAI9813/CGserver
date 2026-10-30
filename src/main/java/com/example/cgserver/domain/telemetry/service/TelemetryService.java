@@ -39,7 +39,7 @@ public class TelemetryService {
                      .vehicleId(vehicleSaveReq.getVehicleId())
                      .deviceId(item.getDeviceId())
                      .metricType(item.getMetricType())
-                     .currentValue(0d)
+                     .currentValue(0.0)
                      .unit(item.getMetricType())
                      .recordedAt(OffsetDateTime.now())
                      .updatedAt(OffsetDateTime.now())

@@ -21,7 +21,6 @@ public enum ErrorCode {
 
     //Vehicle
     VEHICLE_NOT_FOUND(HttpStatus.NOT_FOUND, "V001", "차량 찾을 수 없습니다."),
-
     //DEVICE
     DEVICE_NOT_FOUND(HttpStatus.NOT_FOUND, "D001", "디바이스 찾을 수 없습니다"),
 

@@ -8,6 +8,7 @@ import com.example.cgserver.domain.vehicle.dto.VehicleLockReq;
 import com.example.cgserver.domain.vehicle.dto.VehicleReponse;
 import com.example.cgserver.domain.vehicle.dto.VehicleSaveReq;
 import com.example.cgserver.domain.vehicle.dto.VehiclesDeviceCurrentValue;
+import com.example.cgserver.domain.vehicle.service.VehicleRegisterService;
 import com.example.cgserver.domain.vehicle.service.VehicleService;
 import com.example.cgserver.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -25,7 +26,7 @@ public class VehicleController {
 
     private final VehicleService vehicleService;
     private final ApiKeyService apiKeyService;
-    private final TelemetryService telemetryService;
+    private final VehicleRegisterService vehicleRegisterService;
 
     // 차량 리스트
     @GetMapping
@@ -52,20 +53,11 @@ public class VehicleController {
             @RequestBody VehicleSaveReq request,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        // 키 검증
-        ApiKeyEntity key =  apiKeyService.apiKeyValidate(request.getApiKey(), KeyType.VEHICLE);
-
-        String userId = (userDetails != null && userDetails.getUser() != null)
+        VehicleReponse vehicleResponse = vehicleRegisterService.registVehicle(request, (userDetails != null && userDetails.getUser() != null)
                 ? userDetails.getUser().getUserId()
-                : (key.getCreatedBy() != null ? key.getCreatedBy() : "SYSTEM");
+                : null);
 
-        VehicleReponse vehicleReponse = vehicleService.addVehicle(request, userId);
-
-        telemetryService.saveDtl(request);
-
-        apiKeyService.consumeLimit(key);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleReponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(vehicleResponse);
     }
 
     // 차량 정보

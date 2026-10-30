@@ -41,6 +41,8 @@ public class VehicleService {
 
 
 
+
+    // 차량 아이디별 디바이스 현재값 조회
     public VehiclesDeviceCurrentValue getVehiclesDevice(String vehicleId){
 
         VehicleEntity vehicles = vehicleRepository.findByVehicleId(vehicleId)
@@ -51,6 +53,7 @@ public class VehicleService {
         return VehiclesDeviceCurrentValue.fromEntity(vehicles, dtlEntityList);
     }
 
+    // 차량별 디바이스 리스트
     public List<VehicleReponse.DeviceResponse> getVehiclesDevices(String vehicleId) {
 
         if (!vehicleRepository.existsById(vehicleId)){
