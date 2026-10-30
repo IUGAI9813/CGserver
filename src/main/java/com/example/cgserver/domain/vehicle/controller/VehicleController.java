@@ -7,6 +7,7 @@ import com.example.cgserver.domain.telemetry.service.TelemetryService;
 import com.example.cgserver.domain.vehicle.dto.VehicleLockReq;
 import com.example.cgserver.domain.vehicle.dto.VehicleReponse;
 import com.example.cgserver.domain.vehicle.dto.VehicleSaveReq;
+import com.example.cgserver.domain.vehicle.dto.VehiclesDeviceCurrentValue;
 import com.example.cgserver.domain.vehicle.service.VehicleService;
 import com.example.cgserver.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
@@ -33,13 +34,17 @@ public class VehicleController {
     }
 
 
+    @GetMapping("/simulator/{vehicleId}")
+    public  ResponseEntity<VehiclesDeviceCurrentValue> getVehiclesListDeviceCurrent(@PathVariable String vehicleId) {
+        return  ResponseEntity.ok(vehicleService.getVehiclesDevice(vehicleId));
+    }
+
 
     @GetMapping("/{vehicle_id}/devices")
    public  ResponseEntity<List<VehicleReponse.DeviceResponse>> getVehicleDevices(@PathVariable String vehicle_id){
 
         return ResponseEntity.ok(vehicleService.getVehiclesDevices(vehicle_id));
     }
-
 
     // 차량 등록
     @PostMapping
@@ -56,9 +61,7 @@ public class VehicleController {
 
         VehicleReponse vehicleReponse = vehicleService.addVehicle(request, userId);
 
-
         telemetryService.saveDtl(request);
-        
 
         apiKeyService.consumeLimit(key);
 

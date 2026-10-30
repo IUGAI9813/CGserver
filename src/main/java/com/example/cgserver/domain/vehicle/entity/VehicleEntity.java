@@ -1,6 +1,7 @@
 package com.example.cgserver.domain.vehicle.entity;
 
 import com.example.cgserver.domain.device.entity.DeviceEntity;
+import com.example.cgserver.domain.telemetry.entity.TelemetryDtlEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -62,6 +63,7 @@ public class VehicleEntity {
     @OneToMany(mappedBy = "vehicle", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<DeviceEntity> devices = new ArrayList<>();
+
 
     @PrePersist
     public void prePersist() {

@@ -8,10 +8,13 @@ import com.example.cgserver.domain.audit.service.AuditLogService;
 import com.example.cgserver.domain.common.service.CommonCodeService;
 import com.example.cgserver.domain.device.entity.DeviceEntity;
 import com.example.cgserver.domain.device.repository.DeviceRepository;
+import com.example.cgserver.domain.telemetry.entity.TelemetryDtlEntity;
 import com.example.cgserver.domain.telemetry.entity.TelemetryLogEntity;
+import com.example.cgserver.domain.telemetry.repository.TelemetryDtlRepository;
 import com.example.cgserver.domain.telemetry.repository.TelemetryLogRepository;
 import com.example.cgserver.domain.vehicle.dto.VehicleReponse;
 import com.example.cgserver.domain.vehicle.dto.VehicleSaveReq;
+import com.example.cgserver.domain.vehicle.dto.VehiclesDeviceCurrentValue;
 import com.example.cgserver.domain.vehicle.entity.VehicleEntity;
 import com.example.cgserver.domain.vehicle.repository.VehicleRepository;
 import com.example.cgserver.global.error.BusinessException;
@@ -33,9 +36,20 @@ public class VehicleService {
     private final ApiKeyRepository apiKeyRepository;
 
     private final TelemetryLogRepository telemetryLogRepository;
+    private final TelemetryDtlRepository telemetryDtlRepository;
     private final CommonCodeService commonCodeService;
 
 
+
+    public VehiclesDeviceCurrentValue getVehiclesDevice(String vehicleId){
+
+        VehicleEntity vehicles = vehicleRepository.findByVehicleId(vehicleId)
+                .orElseThrow( () -> new BusinessException(ErrorCode.VEHICLE_NOT_FOUND));
+
+        List<TelemetryDtlEntity> dtlEntityList =  telemetryDtlRepository.findByVehicleId(vehicleId);
+
+        return VehiclesDeviceCurrentValue.fromEntity(vehicles, dtlEntityList);
+    }
 
     public List<VehicleReponse.DeviceResponse> getVehiclesDevices(String vehicleId) {
 
